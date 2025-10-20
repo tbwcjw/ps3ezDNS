@@ -16,7 +16,9 @@ static uint32_t be32(const uint8_t *p) {
     return (uint32_t)((p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3]);
 }
 
-static int within_bounds(size_t off, size_t need, size_t total) {
+static int within_bounds(size_t off, 
+                        size_t need, 
+                        size_t total) {
     return (off + need) <= total;
 }
 
@@ -27,7 +29,9 @@ static int is_end_marker(const uint8_t *p, size_t avail) {
     return memcmp(p, marker, 7) == 0;
 }
 
-static xreg_key_t *parse_keys(const uint8_t *file, size_t file_size, size_t *out_count) {
+static xreg_key_t *parse_keys(const uint8_t *file, 
+                                size_t file_size, 
+                                size_t *out_count) {
     size_t start = KEYS_AREA_OFFSET + HEADER_SIZE;
     size_t end   = KEYS_AREA_OFFSET + AREA_SIZE;
     if (end > file_size) end = file_size;
@@ -82,7 +86,9 @@ static xreg_key_t *parse_keys(const uint8_t *file, size_t file_size, size_t *out
     return keys;
 }
 
-static xreg_value_t *parse_values(const uint8_t *file, size_t file_size, size_t *out_count) {
+static xreg_value_t *parse_values(const uint8_t *file, 
+                                    size_t file_size, 
+                                    size_t *out_count) {
     size_t start = VALUES_AREA_OFFSET;
     size_t end   = VALUES_AREA_OFFSET + AREA_SIZE;
     if (end > file_size) end = file_size;

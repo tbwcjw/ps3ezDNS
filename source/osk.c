@@ -166,8 +166,9 @@ static void OSK_exit(void)
 
 }
 
-int get_osk_string(char *caption, char *str, int len)
-{
+int get_osk_string(char *caption, 
+                    char *str, 
+                    int len) {
     int ret=SUCCESS;
 
     u16 * message = NULL;

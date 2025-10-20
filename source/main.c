@@ -124,13 +124,13 @@ typedef enum {
 //form validation helper strings
 static const char *validation_state_strings[VALIDATION_STATE_COUNT] = {
     [VALID]                      = "Valid",
-    [TOO_MANY_ROWS]              = "Stored profiles full, remove one first.",
-    [NAME_LENGTH]                = "Profile name must be between 1-20 chars.",
-    [NAME_UNIQUENESS]            = "Profile name must be unique.",
-    [PRIMARY_DNS_LENGTH]         = "Primary DNS address has incorrect length.",
-    [SECONDARY_DNS_LENGTH]       = "Secondary DNS address has incorrect length.",
-    [PRIMARY_DNS_ADDR_INVALID]   = "Primary DNS address is invalid.",
-    [SECONDARY_DNS_ADDR_INVALID] = "Secondary DNS address is invalid."
+    [TOO_MANY_ROWS]              = "Stored profiles full, remove one first",
+    [NAME_LENGTH]                = "Profile name must be between 1-20 chars",
+    [NAME_UNIQUENESS]            = "Profile name must be unique",
+    [PRIMARY_DNS_LENGTH]         = "Primary DNS address has incorrect length",
+    [SECONDARY_DNS_LENGTH]       = "Secondary DNS address has incorrect length",
+    [PRIMARY_DNS_ADDR_INVALID]   = "Primary DNS address is invalid",
+    [SECONDARY_DNS_ADDR_INVALID] = "Secondary DNS address is invalid"
 };
 
 //on screen keyboard buffer for new profile form
@@ -186,7 +186,9 @@ int get_value_int(xreg_registry_t *reg, char *key_name, int *out) {
     return SUCCESS;
 }
 
-int get_value_string(xreg_registry_t *reg, char *key_name, char **out) {
+int get_value_string(xreg_registry_t *reg, 
+                    char *key_name, 
+                    char **out) {
     const xreg_key_t *key = xreg_find_key(reg, key_name);
     if(!key) return FAILURE;
 
@@ -210,7 +212,9 @@ int get_value_string(xreg_registry_t *reg, char *key_name, char **out) {
     return SUCCESS;
 }
 
-int set_value_int(xreg_registry_t *reg, const char *key_name, int value) {
+int set_value_int(xreg_registry_t *reg, 
+                    const char *key_name, 
+                    int value) {
     if (!reg || !key_name) return FAILURE;
 
     int be_value = htonl(value); //convert to big endian
@@ -224,7 +228,9 @@ int set_value_int(xreg_registry_t *reg, const char *key_name, int value) {
     return SUCCESS;
 }
 
-int set_value_string(xreg_registry_t *reg, const char *key_name, const char *str) {
+int set_value_string(xreg_registry_t *reg, 
+                    const char *key_name, 
+                    const char *str) {
     if (!reg || !key_name || !str) return FAILURE;
 
     size_t len = strlen(str);
@@ -285,7 +291,8 @@ void draw_horizontal_line(float y_pos, float thickness) {
 
 }
 
-void draw_rect(float x, float y, float w, float h, u32 color, float z) {
+void draw_rect(float x, float y, float w, 
+                float h, u32 color, float z) {
     tiny3d_SetPolygon(TINY3D_QUADS);
 
     tiny3d_VertexPos(x, y, z);
@@ -712,7 +719,8 @@ void draw_footer() {
     }
 }
 
-void throw_error(int recoverable, char* l1, char* l2, char* l3) {
+void throw_error(int recoverable, 
+                char* l1, char* l2, char* l3) {
     error_recoverable = recoverable;
     el1 = l1;
     el2 = l2;
@@ -764,7 +772,9 @@ int load_profiles_csv() {
 }
 
 
-void strtolower(const char *str, char *out, size_t out_size) {
+void strtolower(const char *str, 
+                char *out, 
+                size_t out_size) {
     size_t i;
     for (i = 0; i < out_size - 1 && str[i]; i++) {
         out[i] = tolower((unsigned char)str[i]);
@@ -906,13 +916,6 @@ int main(int argc, char **argv) {
     if(load_profiles_csv() != SUCCESS) {
         throw_error(0, "Failed to load data.", "The file may not exist or has ", "malformed data; check for empty lines.");
     }
-
-    // char *newPrimary = "8.8.8.8";
-    // if(is_valid_addr(newPrimary) != SUCCESS) {
-    //     netDebug("invalid ip given");
-    // } else {
-    //     netDebug("good ip given");
-    // }
 
     while(!exit_requested) {
         //clear screen
@@ -1057,16 +1060,6 @@ int main(int argc, char **argv) {
             if (PRESSED_NOW(BTN_TRIANGLE) && currentState == STATE_NO_DIALOG) {
                 modifiedValues.dnsFlag = !modifiedValues.dnsFlag;
             }
-
-            //debug - error dialog unrecoverable
-            // if (PRESSED_NOW(BTN_LEFT)) {
-            //     throw_error(0, "This is a test of error dialog", "This is unrecoverable", "Line3");
-            // }
-
-            // //debug - error dialog recoverable
-            // if (PRESSED_NOW(BTN_RIGHT)) {
-            //     throw_error(1, "This is a test of error dialog", "This is recoverable", "Line3");
-            // }
 
             //firsty run dialog: square to close
             if (PRESSED_NOW(BTN_SQUARE) && currentState == STATE_FIRST_RUN_DIALOG) {
