@@ -150,9 +150,9 @@ int sys_ring_buzzer(int beeps) {
     if (beeps > 3) beeps = 3;
 
     static const uint64_t args[3][3] = {
-        {0x1004, 0x4, 0x6}, //single beep
-        {0x1004, 0x7, 0x36}, //two beeps
-        {0x1004, 0xa, 0x1b6} //three beeps
+        {0x1004, 0x4, 0x6},     //single beep
+        {0x1004, 0x7, 0x36},    //two beeps
+        {0x1004, 0xa, 0x1b6}    //three beeps
     };
 
     lv2syscall3(392, args[beeps - 1][0], args[beeps - 1][1], args[beeps - 1][2]);
