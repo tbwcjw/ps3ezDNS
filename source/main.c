@@ -125,7 +125,7 @@ typedef enum {
 static const char *validation_state_strings[VALIDATION_STATE_COUNT] = {
     [VALID]                      = "Valid",
     [TOO_MANY_ROWS]              = "Stored profiles full, remove one first.",
-    [NAME_LENGTH]                = "Profile name must be between 1-15 chars.",
+    [NAME_LENGTH]                = "Profile name must be between 1-20 chars.",
     [NAME_UNIQUENESS]            = "Profile name must be unique.",
     [PRIMARY_DNS_LENGTH]         = "Primary DNS address has incorrect length.",
     [SECONDARY_DNS_LENGTH]       = "Secondary DNS address has incorrect length.",

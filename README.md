@@ -9,7 +9,7 @@
 <p>ezDNS makes managing custom network settings effortless by letting you create, save, and switch between multiple DNS profiles. Whether you’re connecting to custom game servers or revival projects, you can load the save the profile, and load it at any time.</p>
 <hr>
 <h3>Installation & Usage</h3>
-TODO
+<p>Installation & usage information can be found in the <a href='https://github.com/tbwcjw/ps3ezDNS/wiki'>wiki</a>.
 <hr>
 <h3>Building</h3>
 <p>You will need to build and install the psl1ght toolchain and ps3libraries.</p>
