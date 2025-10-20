@@ -6,7 +6,7 @@
     A PS3 DNS configuration application for custom DNS profiles.
 </p>
 <h3>Introduction</h3>
-<p>ezDNS makes managing custom network settings effortless by letting you create, save, and switch between multiple DNS profiles. Whether you’re connecting to custom game servers or revival projects, you can load the save the profile, and load it at any time.</p>
+<p>ezDNS makes managing custom network settings effortless by letting you create, save, and switch between multiple DNS profiles.</p>
 <hr>
 <h3>Installation & Usage</h3>
 <p>Installation & usage information can be found in the <a href='https://github.com/tbwcjw/ps3ezDNS/wiki'>wiki</a>.
@@ -18,8 +18,6 @@
 <p>You can use <code>udpdebug.py</code> to view debugging output. Or something like Netcat on linux.</p>
 <p>If you are using ps3loadx, use flag <code>-DPS3LOADX</code> to exit the application back to ps3loadx.
 <hr>
-<h3>Screenshots</h3>
-
 <h3>Credits</h3>
 <p>tiny3d 2.0 + libfont: <a href='https://github.com/crystalct/tiny3D'>crystalct/tiny3D</a></p>
 <hr>
