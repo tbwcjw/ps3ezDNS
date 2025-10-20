@@ -1,0 +1,5 @@
+.vscode
+*.elf
+*.self
+*.pkg
+build
