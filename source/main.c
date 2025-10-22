@@ -113,6 +113,7 @@ typedef enum {
     VALID,
     TOO_MANY_ROWS,
     NAME_LENGTH,
+    NAME_COMMA,
     NAME_UNIQUENESS,
     PRIMARY_DNS_LENGTH,
     SECONDARY_DNS_LENGTH,
@@ -126,6 +127,7 @@ static const char *validation_state_strings[VALIDATION_STATE_COUNT] = {
     [VALID]                      = "Valid",
     [TOO_MANY_ROWS]              = "Stored profiles full, remove one first",
     [NAME_LENGTH]                = "Profile name must be between 1-20 chars",
+    [NAME_COMMA]                 = "Profile name must not contain commas",
     [NAME_UNIQUENESS]            = "Profile name must be unique",
     [PRIMARY_DNS_LENGTH]         = "Primary DNS address has incorrect length",
     [SECONDARY_DNS_LENGTH]       = "Secondary DNS address has incorrect length",
@@ -791,6 +793,8 @@ const char *validation_state_to_string(ValidationState state) {
 ValidationState validate_new_profile_form() {
     if(savedValueCount-2 >= ROW_CAPACITY) return TOO_MANY_ROWS; //ignore 2; we have "Current" and "System default"
     if(strlen(osk_name_buf) < 1) return NAME_LENGTH; // maxlen is handled by osk buffers
+
+    //unique check
     for(int i = 0; i < savedValueCount; i++) {
         char lower_osk_name_buf[sizeof(osk_name_buf)];
         char lower_name[sizeof(osk_name_buf)];
@@ -799,6 +803,10 @@ ValidationState validate_new_profile_form() {
         strtolower(savedValueList[i].name, lower_name, sizeof(lower_name));
         
         if(strcmp(lower_osk_name_buf, lower_name) == 0) return NAME_UNIQUENESS;
+    }
+
+    for(int i = 0; osk_name_buf[i] != '\0'; i++) {
+        if(osk_name_buf[i] == ',') return NAME_COMMA;
     }
 
     if(strlen(osk_primary_buf) < 7) return PRIMARY_DNS_LENGTH;
