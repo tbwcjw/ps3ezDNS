@@ -7,7 +7,7 @@
 
 //net
 #include <arpa/inet.h>
-#include <netdb.h>
+#include <net/net.h>
 
 //psl1ght
 #include <io/pad.h>
@@ -142,7 +142,7 @@ char osk_secondary_buf[15];
 
 int sys_soft_reboot() {
     unlink("/dev_hdd0/tmp/turnoff"); //delete turnoff file to avoid bad reboot
-    lv2syscall3(379, 0x0200, NULL, 0);
+    lv2syscall3(379, 0x0200, 0, 0);
 
     return_to_user_prog(int);
 }
@@ -722,11 +722,13 @@ void draw_footer() {
 }
 
 void throw_error(int recoverable, 
-                char* l1, char* l2, char* l3) {
+                    const char* l1, 
+                    const char* l2, 
+                    const char* l3) {
     error_recoverable = recoverable;
-    el1 = l1;
-    el2 = l2;
-    el3 = l3;
+    el1 = strdup(l1);
+    el2 = strdup(l2);
+    el3 = strdup(l3);
     currentState = STATE_ERROR_DIALOG;
 }
 

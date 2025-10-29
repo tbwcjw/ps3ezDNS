@@ -104,7 +104,7 @@ static inline int csv_create(const char *filename, char **header, size_t count, 
     
     if (header && count > 0) {
         for (size_t i = 0; i < count; i++) {
-            size_t len = strcspn(header[i], "\r\n");
+            //size_t len = strcspn(header[i], "\r\n");
             fputs(header[i], fp);
             if (i < count - 1) fputc(delimiter, fp);
         }
