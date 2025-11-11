@@ -49,8 +49,11 @@
 //break main while loop
 static volatile int exit_requested = 0;
 
-//error dialog buzzer
-static volatile int error_recoverable = 1;
+//error dialog
+#define ERR_RECOVERABLE     1
+#define ERR_UNRECOVERABLE   0
+
+static volatile int error_recoverable = ERR_RECOVERABLE;
 static volatile int error_dialog_buzzer = 0; //has buzzer rung this error?
 char *el1, *el2, *el3; //error line 1 2 3 
 
@@ -533,6 +536,7 @@ void draw_profile_table() {
 
     //items
     for(int i = 0; i < savedValueCount; i++) {
+        if(i == 0 && cur_pos != 0) SetFontColor(LIGHT_GREY, BLACK); //visually "disable" current profile entry
         if(i == cur_pos) SetFontColor(CROSS, BLACK);
         float row_y = dialog_y + row_height + i * row_height - 1.0f;
         DrawString(dialog_x+12.0f, row_y+4.0f, savedValueList[i].name);
@@ -730,15 +734,16 @@ void throw_error(int recoverable,
     el2 = strdup(l2);
     el3 = strdup(l3);
     currentState = STATE_ERROR_DIALOG;
+    netDebug("error (%s): %s: %s, %s", recoverable ? "recoverable" : "unrecoverable", el1, el2, el3);
 }
 
 int profiles_csv_exists() {
     FILE *file = fopen(PROFILE_PATH, "r");
     if (file) {
         fclose(file);
-        return 1;
+        return SUCCESS;
     }
-    return 0;
+    return FAILURE;
 }
 
 int load_profiles_csv() {
@@ -886,24 +891,24 @@ int main(int argc, char **argv) {
     xreg_registry_t *reg = xreg_load(XREG_PATH);
     if (!reg) {
         netDebug("Failed to load xRegistry file");
-        throw_error(0, "Failed to load the xRegistry file.", "Ensure it exists at:", XREG_PATH);
+        throw_error(ERR_UNRECOVERABLE, "Failed to load the xRegistry file.", "Ensure it exists at:", XREG_PATH);
     }
 
     if(get_value_int(reg, DNS_FLAG_KEY, &currentValues.dnsFlag) != SUCCESS) {
         netDebug("Failed to read DNS flag");
-        throw_error(0, "Failed to read DNS flag", "This is most probably a bug.", "Report it on Github.");
+        throw_error(ERR_UNRECOVERABLE, "Failed to read DNS flag", "This is most probably a bug.", "Report it on Github.");
     } else {
         netDebug("%d", currentValues.dnsFlag);
     }
 
     if (get_value_string(reg, DNS_PRIMARY_KEY, &currentValues.primaryDns) != SUCCESS) {
-        throw_error(1, "Failed to read primary DNS", "This is most probably a bug.", "Report it on Github.");
+        throw_error(ERR_RECOVERABLE, "Failed to read primary DNS", "This is most probably a bug.", "Report it on Github.");
     } else {
         netDebug(currentValues.primaryDns);
     }
 
     if (get_value_string(reg, DNS_SECONDARY_KEY, &currentValues.secondaryDns) != SUCCESS) {
-        throw_error(1, "Failed to read secondary DNS", "This is most probably a bug.", "Report it on Github.");
+        throw_error(ERR_RECOVERABLE, "Failed to read secondary DNS", "This is most probably a bug.", "Report it on Github.");
     } else {
         netDebug(currentValues.secondaryDns);
     }
@@ -924,7 +929,7 @@ int main(int argc, char **argv) {
     }
     //create+load/load profiles csv
     if(load_profiles_csv() != SUCCESS) {
-        throw_error(0, "Failed to load data.", "The file may not exist or has ", "malformed data; check for empty lines.");
+        throw_error(ERR_UNRECOVERABLE, "Failed to load data.", "The file may not exist or has ", "malformed data; check for empty lines.");
     }
 
     while(!exit_requested) {
@@ -942,29 +947,33 @@ int main(int argc, char **argv) {
                     exit_requested = 1;     //no changes have been made, exit.
                 }
             }
+            //11-10-25: fixed a bug where circle on save_dialog would open the deletion_confirmation dialog
             //save dialog: X button saves and restarts
-            if (PRESSED_NOW(BTN_CROSS) && currentState == STATE_SAVE_DIALOG) {
+            else if (PRESSED_NOW(BTN_CROSS) && currentState == STATE_SAVE_DIALOG) {
                 currentState = STATE_RESTART_DIALOG;
                 restart_countdown = 3;
                 time(&last_update);
             }
             //save dialog: Square exits without saving.
-            if (PRESSED_NOW(BTN_SQUARE) && currentState == STATE_SAVE_DIALOG) {
+            else if (PRESSED_NOW(BTN_SQUARE) && currentState == STATE_SAVE_DIALOG) {
                 exit_requested = 1;
             }
 
             //exit dialog: circle close dialog (cancel)
-            if (PRESSED_NOW(BTN_CIRCLE) && currentState == STATE_SAVE_DIALOG) {
+            else if (PRESSED_NOW(BTN_CIRCLE) && currentState == STATE_SAVE_DIALOG) {
                 currentState = STATE_NO_DIALOG;
             }
 
-            //confirmation dialog: open confirmation dialog from table, setting modified values into registry
-            if (PRESSED_NOW(BTN_CROSS) && currentState == STATE_NO_DIALOG) {
-                currentState = STATE_CONFIRMATION_DIALOG;
-
-                modifiedValues.dnsFlag = curPosValues.dnsFlag;
-                modifiedValues.primaryDns = curPosValues.primaryDns;
-                modifiedValues.secondaryDns = curPosValues.secondaryDns;
+            //confirmation dialog: open confirmation dialog from table
+            else if (PRESSED_NOW(BTN_CROSS) && currentState == STATE_NO_DIALOG) {
+                
+                //11-10-25: disallow setting of "current" profile.
+                if(cur_pos != 0) {
+                    currentState = STATE_CONFIRMATION_DIALOG;
+                    modifiedValues.dnsFlag = curPosValues.dnsFlag;
+                    modifiedValues.primaryDns = curPosValues.primaryDns;
+                    modifiedValues.secondaryDns = curPosValues.secondaryDns;
+                }
             } else if (PRESSED_NOW(BTN_CROSS) && currentState == STATE_CONFIRMATION_DIALOG) { //save confirmed, restart
                 currentState = STATE_RESTART_DIALOG;
                 restart_countdown = 3;
@@ -986,11 +995,12 @@ int main(int argc, char **argv) {
                 currentState = STATE_NO_DIALOG;
             } else if(PRESSED_NOW(BTN_CROSS) && currentState == STATE_DELETION_CONFIRMATION_DIALOG) { //confirm
                 if(delete_profile() != SUCCESS) {
-                    throw_error(1, "Failed to delete profile", "Perhaps the file is locked?", "Try again later");
+                    throw_error(ERR_RECOVERABLE, "Failed to delete profile", "Perhaps the file is locked?", "Try again later");
                 }
                 netDebug("cur pos %i", cur_pos);
-                cur_pos = savedValueCount-1;
-                currentValues = savedValueList[cur_pos-1];
+                //11-10-25: instead of moving cursor up one, reset cursor to 0.
+                cur_pos = 0;
+                currentValues = savedValueList[0];
                 currentState = STATE_NO_DIALOG;
             }
 
@@ -1023,13 +1033,13 @@ int main(int argc, char **argv) {
                     add_saved_value(&savedValueList, &savedValueCount, newProfile);
                     char *fields[] = {osk_name_buf, osk_primary_buf, osk_secondary_buf};
                     if(csv_append_row(PROFILE_PATH, fields, 3, ',') == 0) {
-                        throw_error(1, "Failed to save to file.", "This is most probably a bug.", "Report it on Github.");
+                        throw_error(ERR_RECOVERABLE, "Failed to save to file.", "This is most probably a bug.", "Report it on Github.");
                     }
                     //reset form and exit
                     reset_new_profile_form();
                     currentState = STATE_NO_DIALOG;
                 } else {
-                    throw_error(1, "Invalid values in form.", validation_state_to_string(valid), "Please try again");
+                    throw_error(ERR_RECOVERABLE, "Invalid values in form.", validation_state_to_string(valid), "Please try again");
                 }
             //up/down movement in form
             } else if(PRESSED_NOW(BTN_DOWN) && currentState == STATE_NEW_PROFILE_DIALOG) { //move cur pos down
@@ -1051,31 +1061,33 @@ int main(int argc, char **argv) {
             }
 
             //move cursor in table: move up
-            if (PRESSED_NOW(BTN_DOWN) && currentState == STATE_NO_DIALOG) {
+            else if (PRESSED_NOW(BTN_DOWN) && currentState == STATE_NO_DIALOG) {
                 cur_pos++;
-                netDebug("Current pos: %i", cur_pos);
+                
                 if (cur_pos >= savedValueCount) cur_pos = 0;
+                netDebug("Current pos: %i", cur_pos);
                 curPosValues = savedValueList[cur_pos]; //set active item by cursor
             }
 
             //move cursor in table: move down
-            if (PRESSED_NOW(BTN_UP) && currentState == STATE_NO_DIALOG) {
+            else if (PRESSED_NOW(BTN_UP) && currentState == STATE_NO_DIALOG) {
                 cur_pos--;
-                netDebug("Current pos: %i", cur_pos);
+                
                 if (cur_pos < 0) cur_pos = savedValueCount - 1;
+                netDebug("Current pos: %i", cur_pos);
                 curPosValues = savedValueList[cur_pos]; //set active item by cursor
             }
 
             //change dns mode
-            if (PRESSED_NOW(BTN_TRIANGLE) && currentState == STATE_NO_DIALOG) {
+            else if (PRESSED_NOW(BTN_TRIANGLE) && currentState == STATE_NO_DIALOG) {
                 modifiedValues.dnsFlag = !modifiedValues.dnsFlag;
             }
 
             //firsty run dialog: square to close
-            if (PRESSED_NOW(BTN_SQUARE) && currentState == STATE_FIRST_RUN_DIALOG) {
+            else if (PRESSED_NOW(BTN_SQUARE) && currentState == STATE_FIRST_RUN_DIALOG) {
                 currentState = STATE_NO_DIALOG;
             }
-
+            
             //reset pad events
             lastPad = (PadButtons){
                 .BTN_CROSS   = paddata.BTN_CROSS,

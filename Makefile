@@ -53,8 +53,8 @@ LIBS		:=	-lsysfs -lfreetype -lio -lnet -lpthread \
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-#optional: 
-CFLAGS		=	-O2 -Wall -mcpu=cell $(MACHDEP) $(INCLUDE) -DPS3_GEKKO $(DFLAGS) -DVERSION=\"$(VERSION)\" -DDEBUG -DDEBUG_ADDR=\"10.0.0.152\" -DDEBUG_PORT=\"18194\" -DPS3LOADX
+#optional: -DDEBUG -DDEBUG_ADDR=\"10.0.0.152\" -DDEBUG_PORT=\"18194\" -DPS3LOADX 
+CFLAGS		=	-O2 -Wall -mcpu=cell $(MACHDEP) $(INCLUDE) -DPS3_GEKKO $(DFLAGS) -DVERSION=\"$(VERSION)\" 
 CXXFLAGS	=	$(CFLAGS)
 
 LDFLAGS		=	$(MACHDEP) -Wl,-Map,$(notdir $@).map
