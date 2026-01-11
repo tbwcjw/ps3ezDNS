@@ -24,3 +24,9 @@
 <h3>License</h3>
 <p>This software is licensed under the <a href=''>MIT License</a>.</p>
 <p>This application was created with the official non-official SDK called PSL1GHT, for more information visit <a href='http://www.psl1ght.com/'>http://www.psl1ght.com/</a>. This is in no way associated with Sony Computer Entertainment Inc., please do not contact them for help, they will not be able to provide it.
+
+
+
+
+
+8==D
