@@ -46,7 +46,7 @@ PKGFILES	:=	$(CURDIR)/pkgfiles
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS		:=	-lsysfs -lfreetype -lio -lnet -lpthread \
+LIBS		:=	-lsysfs -lfreetype -lio -lnet \
 				-lz -ltiny3d -lgcm_sys -lsysutil -lrt \
 				-lsysmodule -lm
 

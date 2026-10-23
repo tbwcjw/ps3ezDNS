@@ -976,9 +976,18 @@ int main(int argc, char **argv) {
                 }
             } else if (PRESSED_NOW(BTN_CROSS) && currentState == STATE_CONFIRMATION_DIALOG) { //save confirmed, restart
                 currentState = STATE_RESTART_DIALOG;
+
+                //10-23-26 - moved this from STATE_RESTART_DIALOG block (line 1112), so it doesn't loop during countdown.
+                if(save_modified_values(reg) != SUCCESS) { //save to xregistry
+                    netDebug("Failed to save modified values");
+                    throw_error(0, "Failed to save modified values.", "The registry has not been changed.", "Check /dev_flash2/etc/xRegistry.sys exists");
+                } else {
+                    netDebug("Save successful");
+                }
+
                 restart_countdown = 3;
                 time(&last_update);
-            }else if (PRESSED_NOW(BTN_CIRCLE) && currentState == STATE_CONFIRMATION_DIALOG) { //discard changes and resume
+            } else if (PRESSED_NOW(BTN_CIRCLE) && currentState == STATE_CONFIRMATION_DIALOG) { //discard changes and resume
                 currentState = STATE_NO_DIALOG;
 
                 modifiedValues.dnsFlag = currentValues.dnsFlag;
@@ -1109,15 +1118,11 @@ int main(int argc, char **argv) {
         draw_controls_box();
         draw_footer();
 
-        // save to registry and restart system.
+        //10-23-26 restart system AFTER save operation completes (save operation moved to line 980)
         if (currentState == STATE_RESTART_DIALOG) {
             time_t current_time;
             time(&current_time);
             
-            if(save_modified_values(reg) != SUCCESS) { //save to xregistry
-                netDebug("Failed to save modified values");
-                throw_error(0, "Failed to save modified values.", "The registry has not been changed.", "Check /dev_flash2/etc/xRegistry.sys exists");
-            }
             if (difftime(current_time, last_update) >= 1.0) {
                 restart_countdown--;
                 last_update = current_time;
